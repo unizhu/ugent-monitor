@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Minimal stdio MCP server for UGENT Monitor.
 
-Exposes one tool, ugent_get_resume_plan. It is intentionally dependency-free so
-Codex and Claude Code can start it from a plugin install without npm/pip setup.
+This server intentionally has no third-party dependencies. MCP stdio messages
+are newline-delimited JSON-RPC, per the 2025-06-18 MCP transport spec. For
+compatibility with older LSP-style clients, the reader also accepts
+Content-Length framed input and mirrors that framing for responses.
 """
 
 from __future__ import annotations
@@ -14,25 +16,25 @@ import sys
 import traceback
 import urllib.error
 import urllib.request
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 SERVER_NAME = "ugent-monitor"
-SERVER_VERSION = "0.1.2"
+SERVER_VERSION = "0.1.5"
+DEFAULT_PROTOCOL_VERSION = "2025-06-18"
 
 
-def _read_message() -> Optional[Dict[str, Any]]:
+def _read_content_length_message(first_line: bytes) -> Optional[Dict[str, Any]]:
     headers: Dict[str, str] = {}
+    line = first_line
     while True:
-        line = sys.stdin.buffer.readline()
-        if line == b"":
-            return None
-        if line in (b"\r\n", b"\n"):
+        if line in (b"\r\n", b"\n", b""):
             break
         try:
             name, value = line.decode("ascii").split(":", 1)
+            headers[name.strip().lower()] = value.strip()
         except ValueError:
-            continue
-        headers[name.strip().lower()] = value.strip()
+            pass
+        line = sys.stdin.buffer.readline()
     length_raw = headers.get("content-length")
     if not length_raw:
         return None
@@ -42,21 +44,37 @@ def _read_message() -> Optional[Dict[str, Any]]:
     return json.loads(body.decode("utf-8"))
 
 
-def _send(payload: Dict[str, Any]) -> None:
+def _read_message() -> Tuple[Optional[Dict[str, Any]], str]:
+    while True:
+        line = sys.stdin.buffer.readline()
+        if line == b"":
+            return None, "ndjson"
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if stripped.lower().startswith(b"content-length:"):
+            return _read_content_length_message(line), "content-length"
+        return json.loads(line.decode("utf-8")), "ndjson"
+
+
+def _send(payload: Dict[str, Any], framing: str = "ndjson") -> None:
     body = json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
-    sys.stdout.buffer.write(b"Content-Length: " + str(len(body)).encode("ascii") + b"\r\n\r\n" + body)
+    if framing == "content-length":
+        sys.stdout.buffer.write(b"Content-Length: " + str(len(body)).encode("ascii") + b"\r\n\r\n" + body)
+    else:
+        sys.stdout.buffer.write(body + b"\n")
     sys.stdout.buffer.flush()
 
 
-def _result(message_id: Any, result: Dict[str, Any]) -> None:
-    _send({"jsonrpc": "2.0", "id": message_id, "result": result})
+def _result(message_id: Any, result: Dict[str, Any], framing: str) -> None:
+    _send({"jsonrpc": "2.0", "id": message_id, "result": result}, framing)
 
 
-def _error(message_id: Any, code: int, message: str, data: Any = None) -> None:
+def _error(message_id: Any, code: int, message: str, framing: str, data: Any = None) -> None:
     err: Dict[str, Any] = {"code": code, "message": message}
     if data is not None:
         err["data"] = data
-    _send({"jsonrpc": "2.0", "id": message_id, "error": err})
+    _send({"jsonrpc": "2.0", "id": message_id, "error": err}, framing)
 
 
 def _plan_from_file(path: pathlib.Path) -> Optional[Dict[str, Any]]:
@@ -144,7 +162,7 @@ TOOLS = [
 ]
 
 
-def _handle(request: Dict[str, Any]) -> None:
+def _handle(request: Dict[str, Any], framing: str) -> None:
     method = request.get("method")
     message_id = request.get("id")
     params = request.get("params") or {}
@@ -154,18 +172,24 @@ def _handle(request: Dict[str, Any]) -> None:
         _result(
             message_id,
             {
-                "protocolVersion": requested or "2024-11-05",
-                "capabilities": {"tools": {}},
+                "protocolVersion": requested or DEFAULT_PROTOCOL_VERSION,
+                "capabilities": {"tools": {"listChanged": False}},
                 "serverInfo": {"name": SERVER_NAME, "version": SERVER_VERSION},
+                "instructions": "Use ugent_get_resume_plan when a UGENT/Codex/Claude session needs rate-limit-aware resume guidance.",
             },
+            framing,
         )
         return
 
-    if method == "notifications/initialized":
+    if method in ("notifications/initialized", "initialized"):
+        return
+
+    if method == "ping":
+        _result(message_id, {}, framing)
         return
 
     if method == "tools/list":
-        _result(message_id, {"tools": TOOLS})
+        _result(message_id, {"tools": TOOLS}, framing)
         return
 
     if method == "tools/call":
@@ -174,31 +198,33 @@ def _handle(request: Dict[str, Any]) -> None:
         if not isinstance(args, dict):
             args = {}
         if name != "ugent_get_resume_plan":
-            _error(message_id, -32601, f"Unknown tool: {name}")
+            _error(message_id, -32601, f"Unknown tool: {name}", framing)
             return
         plan = _resume_plan(args)
-        _result(message_id, {"content": [{"type": "text", "text": json.dumps(plan, ensure_ascii=False, indent=2)}]})
+        _result(message_id, {"content": [{"type": "text", "text": json.dumps(plan, ensure_ascii=False)}]}, framing)
         return
 
     if message_id is not None:
-        _error(message_id, -32601, f"Unknown method: {method}")
+        _error(message_id, -32601, f"Unknown method: {method}", framing)
 
 
 def main() -> int:
+    current_request: Optional[Dict[str, Any]] = None
+    current_framing = "ndjson"
     while True:
         try:
-            request = _read_message()
-            if request is None:
+            current_request, current_framing = _read_message()
+            if current_request is None:
                 return 0
-            _handle(request)
+            _handle(current_request, current_framing)
         except Exception as exc:  # Keep the MCP process alive for malformed calls.
             traceback.print_exc(file=sys.stderr)
             try:
-                message_id = request.get("id") if isinstance(request, dict) else None
+                message_id = current_request.get("id") if isinstance(current_request, dict) else None
             except Exception:
                 message_id = None
             if message_id is not None:
-                _error(message_id, -32603, str(exc))
+                _error(message_id, -32603, str(exc), current_framing)
     return 0
 
 

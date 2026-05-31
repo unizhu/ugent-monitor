@@ -14,7 +14,7 @@
         "path": "./plugins/ugent-monitor"
       },
       "description": "Reports session lifecycle events to UGENT for rate-limit-aware auto-resume",
-      "version": "0.1.3",
+      "version": "0.1.5",
       "author": "Uni Zhu",
       "category": "Productivity",
       "policy": {

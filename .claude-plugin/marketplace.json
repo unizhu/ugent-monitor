@@ -1,24 +1,26 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "ugent-monitor",
   "owner": {
     "name": "Uni Zhu"
   },
   "metadata": {
     "description": "UGENT monitoring plugin for Claude Code and Codex",
-    "version": "0.1.3"
+    "version": "0.1.5"
   },
   "plugins": [
     {
       "name": "ugent-monitor",
       "source": "./",
       "description": "Reports session lifecycle events to UGENT for rate-limit-aware auto-resume",
-      "version": "0.1.3",
+      "version": "0.1.5",
       "author": {
-        "name": "Uni Zhu",
-        "url": "https://github.com/unizhu"
+        "name": "Uni Zhu"
       },
       "category": "developer-tools",
-      "keywords": ["ugent", "monitor", "resume", "hooks", "mcp"]
+      "skills": "./skills/",
+      "hooks": "./hooks/hooks.json",
+      "mcpServers": "./.mcp.json"
     }
   ]
 }

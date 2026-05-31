@@ -1,16 +1,15 @@
 # UGENT Monitor Plugin
 
-UGENT Monitor provides a Claude Code and Codex plugin that reports session lifecycle events to UGENT and exposes a small MCP resume-planning tool.
+UGENT Monitor reports Claude Code/Codex lifecycle events to a local UGENT endpoint and provides a `ugent-resume` skill plus a minimal dependency-free MCP server.
+
+## What this version fixes
+
+- Claude Code marketplace source is Ralph-style `"./"`, avoiding `git-subdir` and object-source compatibility issues.
+- Codex MCP server now uses newline-delimited MCP stdio JSON-RPC, not LSP `Content-Length` framing.
+- Codex MCP launch uses a Python inline bootstrapper that locates the installed plugin cache, working around current Codex relative-path behavior in plugin `.mcp.json` files.
+- All manifests are versioned `0.1.5`.
 
 ## Claude Code install
-
-This repository intentionally uses the same root-level marketplace layout as `snarktank/ralph`:
-
-- `.claude-plugin/marketplace.json` lists the plugin with `"source": "./"`.
-- `.claude-plugin/plugin.json` is the plugin manifest.
-- `skills/`, `commands/`, `hooks/`, `.mcp.json`, and `bin/` are at the repository root.
-
-Install:
 
 ```text
 /plugin marketplace remove ugent-monitor
@@ -20,43 +19,68 @@ Install:
 /reload-plugins
 ```
 
-If Claude still reports an unsupported source type, check the live marketplace file:
+Validate locally before pushing:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/unizhu/ugent-monitor/main/.claude-plugin/marketplace.json | jq '.plugins[0].source'
+claude plugin validate .
+claude plugin validate . --strict
+claude --plugin-dir .
 ```
 
-It must print:
+Claude root layout:
 
-```json
-"./"
+```text
+.claude-plugin/marketplace.json
+.claude-plugin/plugin.json
+skills/ugent-resume/SKILL.md
+commands/ugent-resume.md
+hooks/hooks.json
+.mcp.json
+bin/ugent-monitor-mcp.py
 ```
-
-If it prints `git-subdir`, the GitHub repo was not updated with this package yet.
 
 ## Codex install
-
-Codex uses the nested plugin under `plugins/ugent-monitor` and the marketplace at `.agents/plugins/marketplace.json`.
 
 ```bash
 codex plugin marketplace remove ugent-monitor
 rm -rf ~/.codex/.tmp/marketplaces/ugent-monitor
+rm -rf ~/.codex/plugins/cache/ugent-monitor
 codex plugin marketplace add unizhu/ugent-monitor
 codex plugin marketplace upgrade ugent-monitor
 codex
 ```
 
-Then open `/plugins`, install `ugent-monitor`, enable it, and trust the hooks.
+In Codex, install/enable the plugin in `/plugins`. Then inspect MCP:
 
-## Components
+```text
+/mcp
+```
 
-- Skill/command: `ugent-resume`
-- Hooks: `SessionStart`, `UserPromptSubmit`, `PostToolUse`, `Stop`
-- MCP tool: `ugent_get_resume_plan`
+Expected server/tool after the plugin is enabled:
+
+```text
+ugent-monitor
+mcp__ugent-monitor__ugent_get_resume_plan
+```
+
+Codex nested layout:
+
+```text
+.agents/plugins/marketplace.json
+plugins/ugent-monitor/.codex-plugin/plugin.json
+plugins/ugent-monitor/.mcp.json
+plugins/ugent-monitor/skills/ugent-resume/SKILL.md
+plugins/ugent-monitor/hooks/hooks.json
+plugins/ugent-monitor/bin/ugent-monitor-mcp.py
+```
 
 ## Environment variables
 
-The hook scripts are no-ops unless UGENT endpoint variables are configured.
+Optional runtime integrations:
 
-- `UGENT_MONITOR_URL`
-- `UGENT_MONITOR_TOKEN`
+```bash
+export UGENT_MONITOR_URL="http://127.0.0.1:8786"
+export UGENT_RESUME_PLAN_FILE="$HOME/.ugent/resume-plan.json"
+```
+
+The MCP tool falls back to a safe static resume plan when neither variable is set.
