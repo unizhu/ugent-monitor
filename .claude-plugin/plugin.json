@@ -10,8 +10,9 @@
   "homepage": "https://github.com/unizhu/ugent-monitor",
   "repository": "https://github.com/unizhu/ugent-monitor",
   "license": "MIT",
+  "keywords": ["ugent", "monitor", "resume", "hooks", "mcp"],
   "skills": "./skills/",
   "commands": "./commands/",
   "hooks": "./hooks/hooks.json",
-  "mcpServers": "./.mcp.claude.json"
+  "mcpServers": "./.mcp.json"
 }
