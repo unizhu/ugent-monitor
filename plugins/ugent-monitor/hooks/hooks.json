@@ -1,50 +1,22 @@
 {
   "SessionStart": [
     {
-      "matcher": ".*",
-      "hooks": [
-        {
-          "type": "command",
-          "command": "$PLUGIN_ROOT/hooks/on_session_start.sh",
-          "statusMessage": "Reporting session start to UGENT"
-        }
-      ]
+      "command": "$PLUGIN_ROOT/hooks/on_session_start.sh"
     }
   ],
   "UserPromptSubmit": [
     {
-      "matcher": ".*",
-      "hooks": [
-        {
-          "type": "command",
-          "command": "$PLUGIN_ROOT/hooks/on_user_prompt_submit.sh",
-          "statusMessage": "Reporting user prompt to UGENT"
-        }
-      ]
+      "command": "$PLUGIN_ROOT/hooks/on_user_prompt_submit.sh"
     }
   ],
   "Stop": [
     {
-      "matcher": ".*",
-      "hooks": [
-        {
-          "type": "command",
-          "command": "$PLUGIN_ROOT/hooks/on_stop.sh",
-          "statusMessage": "Reporting stop to UGENT"
-        }
-      ]
+      "command": "$PLUGIN_ROOT/hooks/on_stop.sh"
     }
   ],
   "PostToolUse": [
     {
-      "matcher": ".*",
-      "hooks": [
-        {
-          "type": "command",
-          "command": "$PLUGIN_ROOT/hooks/on_post_tool_use.sh",
-          "statusMessage": "Reporting tool use to UGENT"
-        }
-      ]
+      "command": "$PLUGIN_ROOT/hooks/on_post_tool_use.sh"
     }
   ]
 }
