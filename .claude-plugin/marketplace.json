@@ -6,14 +6,14 @@
   },
   "metadata": {
     "description": "UGENT monitoring plugin for Claude Code and Codex",
-    "version": "0.1.9"
+    "version": "0.1.10"
   },
   "plugins": [
     {
       "name": "ugent-monitor",
       "source": "./",
       "description": "Reports session lifecycle events to UGENT for rate-limit-aware auto-resume",
-      "version": "0.1.9",
+      "version": "0.1.10",
       "author": {
         "name": "Uni Zhu"
       },
