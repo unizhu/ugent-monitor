@@ -2,7 +2,7 @@
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
   "name": "ugent-monitor",
   "displayName": "UGENT Monitor",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Reports Claude Code session lifecycle events to UGENT for rate-limit-aware auto-resume.",
   "author": {
     "name": "Uni Zhu",
@@ -11,9 +11,13 @@
   "homepage": "https://github.com/unizhu/ugent-monitor",
   "repository": "https://github.com/unizhu/ugent-monitor",
   "license": "MIT",
-  "keywords": ["ugent", "monitor", "resume", "hooks", "mcp"],
+  "keywords": [
+    "ugent",
+    "monitor",
+    "resume",
+    "hooks",
+    "mcp"
+  ],
   "skills": "./skills/",
-  "commands": "./commands/",
-  "hooks": "./hooks/hooks.json",
-  "mcpServers": "./.mcp.json"
+  "commands": "./commands/"
 }

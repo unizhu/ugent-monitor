@@ -1,6 +1,6 @@
 {
   "name": "ugent-monitor",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Reports Codex session lifecycle events to UGENT for rate-limit-aware auto-resume.",
   "author": {
     "name": "Uni Zhu",
@@ -18,6 +18,8 @@
     "longDescription": "Monitors Codex sessions and reports lifecycle events to UGENT for auto-resume.",
     "developerName": "Uni Zhu",
     "category": "Productivity",
-    "capabilities": ["Read"]
+    "capabilities": [
+      "Read"
+    ]
   }
 }

@@ -41,5 +41,6 @@
         ]
       }
     ]
-  }
+  },
+  "description": "Report Claude Code lifecycle events to UGENT."
 }
