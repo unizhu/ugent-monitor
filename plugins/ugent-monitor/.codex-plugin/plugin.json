@@ -2,7 +2,13 @@
   "name": "ugent-monitor",
   "version": "0.1.0",
   "description": "Reports Codex session lifecycle events to UGENT for rate-limit-aware auto-resume.",
-  "author": "Uni Zhu",
+  "author": {
+    "name": "Uni Zhu",
+    "url": "https://github.com/unizhu"
+  },
+  "homepage": "https://github.com/unizhu/ugent-monitor",
+  "repository": "https://github.com/unizhu/ugent-monitor",
+  "license": "MIT",
   "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "UGENT Monitor",
