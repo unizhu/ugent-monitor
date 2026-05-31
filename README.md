@@ -96,3 +96,8 @@ The server uses `${CLAUDE_PLUGIN_ROOT:-.}` so it works in both modes:
 - Source-repo/project mode: the fallback `.` points at this repository root.
 
 To test the installed plugin without the project-level `.mcp.json` taking precedence, open Claude Code from another project directory.
+
+
+## Claude MCP note
+
+The Claude plugin declares its MCP server inline in `.claude-plugin/plugin.json` so the repository root does not need a project-scoped `.mcp.json`. This avoids a duplicate project-vs-plugin MCP warning when developing from this repository. Codex still uses `plugins/ugent-monitor/.mcp.json` for its nested plugin root.

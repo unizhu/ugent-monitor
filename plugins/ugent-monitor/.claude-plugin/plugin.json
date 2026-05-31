@@ -1,6 +1,6 @@
 {
   "name": "ugent-monitor",
-  "version": "0.1.7",
+  "version": "0.1.9",
   "description": "Reports Claude Code session lifecycle events to UGENT for rate-limit-aware auto-resume.",
   "author": {
     "name": "Uni Zhu",
