@@ -7,7 +7,7 @@ UGENT Monitor reports Claude Code/Codex lifecycle events to a local UGENT endpoi
 - Claude Code marketplace source is Ralph-style `"./"`, avoiding `git-subdir` and object-source compatibility issues.
 - Codex MCP server now uses newline-delimited MCP stdio JSON-RPC, not LSP `Content-Length` framing.
 - Codex MCP launch uses a Python inline bootstrapper that locates the installed plugin cache, working around current Codex relative-path behavior in plugin `.mcp.json` files.
-- All manifests are versioned `0.1.6`.
+- All manifests are versioned `0.1.5`.
 
 ## Claude Code install
 
@@ -84,3 +84,15 @@ export UGENT_RESUME_PLAN_FILE="$HOME/.ugent/resume-plan.json"
 ```
 
 The MCP tool falls back to a safe static resume plan when neither variable is set.
+
+
+## Claude Code note: project `.mcp.json` vs plugin MCP
+
+This repository contains a root `.mcp.json` because Claude Code plugins bundle MCP servers from the plugin root. If you open Claude Code while your current working directory is this repository, Claude Code will also detect that same file as a project-scoped MCP config. That is expected.
+
+The server uses `${CLAUDE_PLUGIN_ROOT:-.}` so it works in both modes:
+
+- Installed plugin mode: `${CLAUDE_PLUGIN_ROOT}` points at Claude's plugin cache.
+- Source-repo/project mode: the fallback `.` points at this repository root.
+
+To test the installed plugin without the project-level `.mcp.json` taking precedence, open Claude Code from another project directory.
