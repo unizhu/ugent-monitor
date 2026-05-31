@@ -5,16 +5,52 @@
   "author": "Uni Zhu",
   "hooks": {
     "SessionStart": [
-      { "matcher": ".*", "command": "$PLUGIN_ROOT/hooks/on_session_start.sh" }
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$PLUGIN_ROOT/hooks/on_session_start.sh",
+            "statusMessage": "Reporting session start to UGENT"
+          }
+        ]
+      }
     ],
     "UserPromptSubmit": [
-      { "matcher": ".*", "command": "$PLUGIN_ROOT/hooks/on_user_prompt_submit.sh" }
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$PLUGIN_ROOT/hooks/on_user_prompt_submit.sh",
+            "statusMessage": "Reporting user prompt to UGENT"
+          }
+        ]
+      }
     ],
     "Stop": [
-      { "matcher": ".*", "command": "$PLUGIN_ROOT/hooks/on_stop.sh" }
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$PLUGIN_ROOT/hooks/on_stop.sh",
+            "statusMessage": "Reporting stop to UGENT"
+          }
+        ]
+      }
     ],
     "PostToolUse": [
-      { "matcher": ".*", "command": "$PLUGIN_ROOT/hooks/on_post_tool_use.sh" }
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$PLUGIN_ROOT/hooks/on_post_tool_use.sh",
+            "statusMessage": "Reporting tool use to UGENT"
+          }
+        ]
+      }
     ]
   }
 }
