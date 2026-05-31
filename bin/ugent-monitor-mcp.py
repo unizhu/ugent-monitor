@@ -19,7 +19,7 @@ import urllib.request
 from typing import Any, Dict, Optional, Tuple
 
 SERVER_NAME = "ugent-monitor"
-SERVER_VERSION = "0.1.5"
+SERVER_VERSION = "0.1.6"
 DEFAULT_PROTOCOL_VERSION = "2025-06-18"
 
 

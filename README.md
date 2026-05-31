@@ -7,7 +7,7 @@ UGENT Monitor reports Claude Code/Codex lifecycle events to a local UGENT endpoi
 - Claude Code marketplace source is Ralph-style `"./"`, avoiding `git-subdir` and object-source compatibility issues.
 - Codex MCP server now uses newline-delimited MCP stdio JSON-RPC, not LSP `Content-Length` framing.
 - Codex MCP launch uses a Python inline bootstrapper that locates the installed plugin cache, working around current Codex relative-path behavior in plugin `.mcp.json` files.
-- All manifests are versioned `0.1.5`.
+- All manifests are versioned `0.1.6`.
 
 ## Claude Code install
 
