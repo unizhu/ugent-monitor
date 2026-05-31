@@ -1,7 +1,7 @@
 {
   "name": "ugent-monitor",
   "displayName": "UGENT Monitor",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Reports Claude Code session lifecycle events to UGENT for rate-limit-aware auto-resume.",
   "author": {
     "name": "Uni Zhu",
@@ -12,5 +12,6 @@
   "license": "MIT",
   "skills": "./skills/",
   "commands": "./commands/",
-  "hooks": "./hooks/hooks.json"
+  "hooks": "./hooks/hooks.json",
+  "mcpServers": "./.mcp.claude.json"
 }

@@ -3,20 +3,18 @@
   "interface": {
     "displayName": "UGENT Monitor",
     "shortDescription": "Session monitoring for UGENT auto-resume",
-    "longDescription": "Reports Claude Code and Codex session lifecycle events to UGENT for rate-limit-aware auto-resume capabilities",
+    "longDescription": "Reports Claude Code and Codex session lifecycle events to UGENT for rate-limit-aware auto-resume capabilities.",
     "category": "Productivity"
   },
   "plugins": [
     {
       "name": "ugent-monitor",
       "source": {
-        "source": "git-subdir",
-        "url": "https://github.com/unizhu/ugent-monitor.git",
-        "path": "./plugins/ugent-monitor",
-        "ref": "main"
+        "source": "local",
+        "path": "./plugins/ugent-monitor"
       },
       "description": "Reports session lifecycle events to UGENT for rate-limit-aware auto-resume",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "author": "Uni Zhu",
       "category": "Productivity",
       "policy": {
