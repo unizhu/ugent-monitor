@@ -1,0 +1,54 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/on_session_start.sh",
+            "timeout": 5,
+            "statusMessage": "Reporting UGENT session start"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/on_user_prompt_submit.sh",
+            "timeout": 5,
+            "statusMessage": "Reporting UGENT prompt"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/on_stop.sh",
+            "timeout": 5,
+            "statusMessage": "Reporting UGENT stop"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/hooks/on_post_tool_use.sh",
+            "timeout": 5,
+            "statusMessage": "Reporting UGENT tool use"
+          }
+        ]
+      }
+    ]
+  }
+}

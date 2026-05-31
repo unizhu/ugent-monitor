@@ -1,0 +1,16 @@
+{
+  "name": "ugent-monitor",
+  "displayName": "UGENT Monitor",
+  "version": "0.1.1",
+  "description": "Reports Claude Code session lifecycle events to UGENT for rate-limit-aware auto-resume.",
+  "author": {
+    "name": "Uni Zhu",
+    "url": "https://github.com/unizhu"
+  },
+  "homepage": "https://github.com/unizhu/ugent-monitor",
+  "repository": "https://github.com/unizhu/ugent-monitor",
+  "license": "MIT",
+  "skills": "./skills/",
+  "commands": "./commands/",
+  "hooks": "./hooks/hooks.json"
+}
