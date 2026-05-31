@@ -6,8 +6,11 @@ Used by UGENT to auto-resume rate-limited sessions after the cooldown elapses.
 ## Install (Claude Code)
 
 ```bash
-/plugin marketplace add unizhu/ugent-monitor
-/plugin install ugent-monitor@unizhu-ugent-monitor
+# Add this repo as a local marketplace
+/plugin marketplace add /Users/unizhu/Documents/AI/ugent-monitor
+
+# Install the plugin from the marketplace
+/plugin install ugent-monitor@ugent-monitor
 ```
 
 Or clone and use a local marketplace entry pointing at this repo.
@@ -15,9 +18,12 @@ Or clone and use a local marketplace entry pointing at this repo.
 ## Install (Codex)
 
 ```bash
-codex
+# Add this repo as a local marketplace
+codex marketplace add /Users/unizhu/Documents/AI/ugent-monitor
+
+# Then in Codex:
 /plugins
-# Add unizhu/ugent-monitor marketplace, install ugent-monitor
+# Select "UGENT Monitor" marketplace, install ugent-monitor
 ```
 
 **Known issue:** Codex <= v0.118.0 has a bug where plugin-local hooks may not

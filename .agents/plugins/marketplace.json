@@ -1,0 +1,25 @@
+{
+  "name": "ugent-monitor",
+  "interface": {
+    "displayName": "UGENT Monitor",
+    "shortDescription": "Session monitoring for UGENT auto-resume",
+    "longDescription": "Reports Claude Code and Codex session lifecycle events to UGENT for rate-limit-aware auto-resume capabilities",
+    "category": "developer-tools"
+  },
+  "plugins": [
+    {
+      "name": "ugent-monitor",
+      "source": {
+        "path": "."
+      },
+      "description": "Reports session lifecycle events to UGENT for rate-limit-aware auto-resume",
+      "version": "0.1.0",
+      "author": "Uni Zhu",
+      "category": "developer-tools",
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      }
+    }
+  ]
+}
