@@ -1,9 +1,18 @@
 #!/usr/bin/env bash
 # Shared helper: read raw hook JSON from stdin, wrap with metadata, POST to UGENT IPC.
-# Usage:  post_event.sh <event_name> <agent>
-# Env:    UGENT_BRIDGE_SOCK   Override default socket path
-#         UGENT_BRIDGE_HTTP   Override HTTP endpoint URL
-#         UGENT_IPC_TOKEN     Pre-shared token, contents of ~/.ugent/run/external_agent_token
+# Usage:  post_event.sh <event_name> [agent]
+#
+# When <agent> is empty or omitted, detect_agent() resolves it via:
+#   1. PLUGIN_AGENT env var (explicit override)
+#   2. CLAUDE_PLUGIN_ROOT path: contains /.codex/ -> codex, /.claude/ -> claude-code
+#   3. CODEX_HOME set without CLAUDE_PROJECT_DIR -> codex
+#   4. CLAUDE_PROJECT_DIR set -> claude-code
+#   5. Fallback: claude-code (legacy behavior)
+#
+# Env:    UGENT_BRIDGE_SOCK       Override default socket path
+#         UGENT_BRIDGE_HTTP       Override HTTP endpoint URL
+#         UGENT_IPC_TOKEN_PATH    Override token file location
+#                                 (default: ~/.ugent/run/external_agent_token)
 #
 # Socket resolution order:
 #   1. $UGENT_BRIDGE_SOCK (explicit pin)
@@ -15,7 +24,27 @@
 set -euo pipefail
 
 event_name="${1:?event name required}"
-agent="${2:?agent required (claude-code|codex)}"
+agent="${2:-}"
+
+detect_agent() {
+  if [[ -n "${PLUGIN_AGENT:-}" ]]; then echo "$PLUGIN_AGENT"; return; fi
+  local root="${CLAUDE_PLUGIN_ROOT:-}"
+  case "$root" in
+    */.codex/*|*/codex/plugins/*) echo codex; return ;;
+    */.claude/*|*/claude/plugins/*) echo claude-code; return ;;
+  esac
+  if [[ -n "${CODEX_HOME:-}" && -z "${CLAUDE_PROJECT_DIR:-}" ]]; then
+    echo codex; return
+  fi
+  if [[ -n "${CLAUDE_PROJECT_DIR:-}" ]]; then
+    echo claude-code; return
+  fi
+  echo claude-code
+}
+
+if [[ -z "$agent" ]]; then
+  agent="$(detect_agent)"
+fi
 
 resolve_socket() {
   # 1. Explicit pin

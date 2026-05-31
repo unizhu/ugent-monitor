@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
+# Agent detection lives in lib/post_event.sh; PLUGIN_AGENT env overrides it.
 set -euo pipefail
-agent="${PLUGIN_AGENT:-$( [[ -n "${PLUGIN_ROOT:-}" && -z "${CLAUDE_PROJECT_DIR:-}" ]] && echo codex || echo claude-code )}"
-exec "$(dirname "$0")/lib/post_event.sh" PostToolUse "$agent"
+exec "$(dirname "$0")/lib/post_event.sh" PostToolUse "${PLUGIN_AGENT:-}"
