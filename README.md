@@ -1,14 +1,21 @@
-# UGENT Monitor Plugin Marketplace
+# UGENT Monitor Plugin
 
-This repository contains the UGENT Monitor plugin for Claude Code and Codex. The plugin reports session lifecycle events to UGENT for rate-limit-aware auto-resume capabilities.
+A monitoring plugin for Claude Code and Codex that reports session lifecycle events to UGENT for rate-limit-aware auto-resume capabilities.
+
+## Features
+
+- **Session Tracking**: Reports when Claude Code or Codex sessions start and stop
+- **Rate Limit Detection**: Detects when sessions hit rate limits and reports retry timing
+- **Auto-Resume Support**: Enables UGENT to automatically resume sessions after rate limits reset
+- **Tool Usage Monitoring**: Tracks tool usage events for better observability
 
 ## Installation
 
 ### Claude Code
 
 ```bash
-# Add this repository as a marketplace
-/plugin marketplace add https://github.com/unizhu/ugent-monitor
+# Add the marketplace
+/plugin marketplace add unizhu/ugent-monitor
 
 # Install the plugin
 /plugin install ugent-monitor@ugent-monitor
@@ -17,100 +24,128 @@ This repository contains the UGENT Monitor plugin for Claude Code and Codex. The
 ### Codex
 
 ```bash
-# Add this repository as a marketplace
-codex marketplace add https://github.com/unizhu/ugent-monitor
+# Add the marketplace
+codex plugin marketplace add unizhu/ugent-monitor
 
-# List available plugins
-/plugins
+# Install the plugin
+codex plugin install ugent-monitor@ugent-monitor
 ```
 
-Then select "UGENT Monitor" from the marketplace and install it.
+**Important: Codex Hooks Workaround**
 
-## Plugin Features
+Codex has a known bug ([issue #16430](https://github.com/openai/codex/issues/16430)) where plugin-local hooks don't execute. The runtime only loads hooks from `~/.codex/hooks.json`, not from plugin directories.
 
-The ugent-monitor plugin provides:
+**Workaround**: After installing the plugin, manually copy the hooks configuration:
 
-- **SessionStart hook**: Reports when a session begins
-- **UserPromptSubmit hook**: Reports when a user submits a prompt
-- **Stop hook**: Reports when a session stops (including rate-limit detection)
-- **PostToolUse hook**: Reports tool usage
+```bash
+# Find the plugin installation directory
+PLUGIN_DIR=$(find ~/.codex/plugins -name "ugent-monitor" -type d | head -1)
 
-All events are sent to the UGENT daemon via Unix socket or HTTP fallback.
+# Copy hooks.json to the global location
+cp "$PLUGIN_DIR/hooks/hooks.json" ~/.codex/hooks.json
 
-## Requirements
+# Make hook scripts executable
+chmod +x "$PLUGIN_DIR"/hooks/*.sh
+chmod +x "$PLUGIN_DIR"/hooks/lib/*.sh
+```
 
-- UGENT daemon must be running (`ugent start`)
-- For Claude Code: Claude Code with plugin support
-- For Codex: Codex CLI with plugin support
+Then restart Codex for the hooks to take effect.
+
+## How It Works
+
+The plugin uses lifecycle hooks to send JSON-RPC events to UGENT's plugin bridge:
+
+1. **SessionStart**: Fired when a new session begins
+2. **UserPromptSubmit**: Fired when the user submits a prompt
+3. **Stop**: Fired when the session stops (including rate limit stops)
+4. **PostToolUse**: Fired after each tool execution
+
+Each hook script:
+- Collects session metadata (session ID, agent type, timestamp)
+- Sends a JSON-RPC `external_agent.report_event` request to UGENT
+- UGENT's `ExternalSessionRegistry` tracks the session state
+- The `ResumeScheduler` monitors rate-limited sessions and triggers auto-resume
 
 ## Configuration
 
-The plugin automatically detects the UGENT socket at:
-- `~/.ugent/run/bridge.sock` (Unix socket)
-- Falls back to HTTP if socket is not available
+The plugin automatically detects:
+- **Agent Type**: Claude Code vs Codex (via environment variables)
+- **Session ID**: From `CLAUDE_SESSION_ID` or `CODEX_SESSION_ID`
+- **Rate Limit Info**: From `RETRY_AFTER` environment variable (if set)
 
-You can override the socket path using the `UGENT_BRIDGE_SOCK` environment variable.
+No manual configuration is required.
 
-## Repository Structure
+## Requirements
+
+- UGENT running with plugin bridge enabled
+- Claude Code or Codex CLI installed
+- Bash shell (for hook scripts)
+- `curl` and `jq` (for JSON-RPC communication)
+
+## Directory Structure
 
 ```
 ugent-monitor/
 ├── .claude-plugin/
-│   └── marketplace.json          # Claude Code marketplace manifest
+│   ├── marketplace.json    # Claude Code marketplace manifest
+│   └── plugin.json         # Claude Code plugin manifest
+├── .codex-plugin/
+│   └── plugin.json         # Codex plugin manifest
 ├── .agents/
 │   └── plugins/
-│       └── marketplace.json      # Codex marketplace manifest
-├── plugins/
-│   └── ugent-monitor/            # The actual plugin
-│       ├── .claude-plugin/
-│       │   └── plugin.json
-│       ├── .codex-plugin/
-│       │   └── plugin.json
-│       ├── hooks/
-│       │   ├── hooks.json
-│       │   ├── on_session_start.sh
-│       │   ├── on_user_prompt_submit.sh
-│       │   ├── on_stop.sh
-│       │   ├── on_post_tool_use.sh
-│       │   └── lib/
-│       │       └── post_event.sh
-│       ├── commands/
-│       │   └── ugent-resume.md
-│       └── README.md
-└── README.md                     # This file
+│       └── marketplace.json # Codex marketplace manifest
+├── hooks/
+│   ├── hooks.json          # Codex hooks configuration
+│   ├── on_session_start.sh
+│   ├── on_user_prompt_submit.sh
+│   ├── on_stop.sh
+│   ├── on_post_tool_use.sh
+│   └── lib/
+│       └── post_event.sh   # Shared JSON-RPC helper
+└── commands/
+    └── ugent-resume.md     # Custom command for manual resume
 ```
-
-## Development
-
-To test the plugin locally:
-
-1. Clone this repository
-2. Add it as a local marketplace:
-   - Claude Code: `/plugin marketplace add /path/to/ugent-monitor`
-   - Codex: `codex marketplace add /path/to/ugent-monitor`
-3. Install the plugin from the marketplace
 
 ## Troubleshooting
 
-### Plugin not showing in Codex
+### Claude Code: "source type not supported"
 
-If the plugin doesn't appear in `/plugins`:
-1. Check that the marketplace was added: `codex marketplace list`
-2. Verify the marketplace.json is valid JSON
-3. Restart Codex CLI
+This error occurs with older marketplace configurations. The latest version uses `"source": "./"` which is compatible with all Claude Code versions.
 
-### Claude Code version error
+**Solution**: Remove and re-add the marketplace:
+```bash
+/plugin marketplace remove ugent-monitor
+/plugin marketplace add unizhu/ugent-monitor
+/plugin install ugent-monitor@ugent-monitor
+```
 
-If you see "This plugin uses a source type your Claude Code version does not support":
-1. Update Claude Code to the latest version
-2. The plugin requires Claude Code with marketplace support
+### Codex: "No plugin hooks"
 
-### Hooks not firing
+This is the known bug mentioned above. Plugin-local hooks don't work in Codex.
 
-1. Verify UGENT daemon is running: `ps aux | grep ugent`
-2. Check socket exists: `ls -la ~/.ugent/run/bridge.sock`
-3. Test hook manually: `echo '{}' | bash plugins/ugent-monitor/hooks/on_session_start.sh`
+**Solution**: Use the workaround to copy hooks to `~/.codex/hooks.json`.
+
+### Hooks Not Firing
+
+1. Check that UGENT is running: `ps aux | grep ugent`
+2. Verify the plugin bridge socket exists: `ls -la ~/.ugent/run/bridge.sock`
+3. Check hook script permissions: `chmod +x hooks/*.sh hooks/lib/*.sh`
+4. Test a hook manually: `./hooks/on_session_start.sh`
+
+### Rate Limit Auto-Resume Not Working
+
+1. Verify the session is tracked: In UGENT REPL, run `/claude status` or `/codex status`
+2. Check that `auto_resume_enabled = true` in `~/.ugent/external_agents.toml`
+3. For yolo mode, also set `auto_resume_allow_yolo = true`
+4. Check UGENT logs for scheduler activity
 
 ## License
 
-MIT
+MIT License - Copyright 2026 Uni Zhu
+
+## Links
+
+- [UGENT Project](https://github.com/unizhu/ugent)
+- [Claude Code Plugins Docs](https://code.claude.com/docs/en/plugins)
+- [Codex Plugins Docs](https://developers.openai.com/codex/plugins)
+- [Codex Hooks Bug #16430](https://github.com/openai/codex/issues/16430)
