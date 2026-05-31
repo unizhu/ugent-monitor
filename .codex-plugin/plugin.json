@@ -1,0 +1,20 @@
+{
+  "name": "ugent-monitor",
+  "version": "0.1.0",
+  "description": "Reports Codex session lifecycle events to UGENT for rate-limit-aware auto-resume.",
+  "author": "Uni Zhu",
+  "hooks": {
+    "SessionStart": [
+      { "matcher": ".*", "command": "$PLUGIN_ROOT/hooks/on_session_start.sh" }
+    ],
+    "UserPromptSubmit": [
+      { "matcher": ".*", "command": "$PLUGIN_ROOT/hooks/on_user_prompt_submit.sh" }
+    ],
+    "Stop": [
+      { "matcher": ".*", "command": "$PLUGIN_ROOT/hooks/on_stop.sh" }
+    ],
+    "PostToolUse": [
+      { "matcher": ".*", "command": "$PLUGIN_ROOT/hooks/on_post_tool_use.sh" }
+    ]
+  }
+}
